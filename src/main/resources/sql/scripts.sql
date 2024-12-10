@@ -22,3 +22,13 @@ IF NOT EXISTS (SELECT 1 FROM authorities WHERE username = 'admin')
 BEGIN
 INSERT INTO authorities VALUES ('admin','admin');
 END
+
+CREATE TABLE customer (
+  id int IDENTITY(1,1) PRIMARY KEY NOT NULL,
+  email varchar(45)  NOT NULL,
+  pwd varchar(200)  NOT NULL,
+  role varchar(45)  NOT NULL
+);
+
+insert into customer (email,pwd,role) values('happy@example.com','{noop}zeroToone@12345','read')
+insert into customer (email,pwd,role) values('admin@example.com','{bcrypt}$2a$12$zluYhpmOvA.cJyKXCbm/s.NoL6cSAgmstT44nE4jt7YH3pDBbvVZy','admin')
