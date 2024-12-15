@@ -1,5 +1,7 @@
 package com.cg.springsecurity.zero_to_master.config;
 
+import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAccessDeniedHandler;
+import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,11 +22,15 @@ public class ProjectSecurityProdConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception
     {
         //http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
-        http.csrf(crsfConfig-> crsfConfig.disable()).authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/account","/balance","/cards","/loans").authenticated()
-                        .requestMatchers("/notices","/contact","error","/register").permitAll());
+        http.sessionManagement(smc->smc.invalidSessionUrl("/invalidSession").maximumSessions(1).maxSessionsPreventsLogin(true))
+            .requiresChannel(rcc->rcc.anyRequest().requiresSecure())
+            .csrf(crsfConfig-> crsfConfig.disable())
+            .authorizeHttpRequests((requests) -> requests
+            .requestMatchers("/account","/balance","/cards","/loans").authenticated()
+            .requestMatchers("/notices","/contact","error","/register","/invalidSession").permitAll());
         http.formLogin(withDefaults());
-        http.httpBasic(withDefaults());
+        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 
