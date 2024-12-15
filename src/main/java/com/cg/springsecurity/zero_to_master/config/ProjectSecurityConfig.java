@@ -1,7 +1,10 @@
 package com.cg.springsecurity.zero_to_master.config;
 
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAccessDeniedHandler;
+import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationFailureHandler;
+import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationSuccessHandler;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -12,12 +15,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @Profile("!prod")
+@RequiredArgsConstructor
 public class ProjectSecurityConfig {
-    
+
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception
     {
@@ -25,9 +30,16 @@ public class ProjectSecurityConfig {
         http.sessionManagement(smc->smc.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true))
             .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())
             .csrf(crsfConfig-> crsfConfig.disable()).authorizeHttpRequests((requests) -> requests
-            .requestMatchers("/account","/balance","/cards","/loans").authenticated()
-            .requestMatchers("/notices","/contact","error","/register","/invalidSession").permitAll());
-        http.formLogin(withDefaults());
+            .requestMatchers("/dashboard","/account","/balance","/cards","/loans").authenticated()
+            .requestMatchers("/","/home", "/holidays/**", "/contact", "/saveMsg",
+                    "/courses", "/about", "/assets/**", "/login/**","/notices","/contact","error","/register","/invalidSession").permitAll());
+
+            http.formLogin(flc -> flc.loginPage("/login").usernameParameter("userid").passwordParameter("secretPwd")
+            .defaultSuccessUrl("/dashboard").failureUrl("/login?error=true")
+            .successHandler(authenticationSuccessHandler).failureHandler(authenticationFailureHandler))
+            .logout(loc -> loc.logoutSuccessUrl("/login?logout=true").invalidateHttpSession(true).clearAuthentication(true)
+                        .deleteCookies("JSESSIONID"));
+
         http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 /*
