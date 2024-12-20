@@ -18,11 +18,7 @@ import java.util.List;
 public class EazyBankUserDetailsService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
-    /**
-     * @param username
-     * @return
-     * @throws UsernameNotFoundException
-     */
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Customer customer=customerRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User details not found for the user: "+username));
