@@ -141,3 +141,36 @@ CREATE TABLE notice_details (
                                 create_dt date DEFAULT NULL,
                                 update_dt date DEFAULT NULL,
 );
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('Home Loan Interest rates reduced', 'Home loan interest rates are reduced as per the goverment guidelines. The updated rates will be effective immediately',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('Net Banking Offers', 'Customers who will opt for Internet banking while opening a saving account will get a $50 amazon voucher',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('Mobile App Downtime', 'The mobile application of the EazyBank will be down from 2AM-5AM on 12/05/2020 due to maintenance activities',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('E Auction notice', 'There will be a e-auction on 12/08/2020 on the Bank website for all the stubborn arrears.Interested parties can participate in the e-auction',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('Launch of Millennia Cards', 'Millennia Credit Cards are launched for the premium customers of EazyBank. With these cards, you will get 5% cashback for each purchase',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+INSERT INTO notice_details ( notice_summary, notice_details, notic_beg_dt, notic_end_dt, create_dt, update_dt)
+VALUES ('COVID-19 Insurance', 'EazyBank launched an insurance policy which will cover COVID-19 expenses. Please reach out to the branch for more details',
+        DATEADD(DAY,-30,GETDATE()) , DATEADD(DAY,30,GETDATE()), GETDATE(), null);
+
+create table contact_messages(
+                                 contact_id varchar(50) primary key not null,
+                                 contact_name varchar(50) not null,
+                                 contact_email varchar(100) not null,
+                                 [subject] varchar(500) not null,
+                                 [message] varchar(2000) not null,
+                                 create_dt date default null
+)

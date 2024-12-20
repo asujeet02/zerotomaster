@@ -30,7 +30,7 @@ public class ProjectSecurityConfig {
         http.sessionManagement(smc->smc.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true))
             .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())
             .csrf(crsfConfig-> crsfConfig.disable()).authorizeHttpRequests((requests) -> requests
-            .requestMatchers("/dashboard","/account","/balance","/cards","/loans").authenticated()
+            .requestMatchers("/dashboard","/myAccount","/myBalance","/myCards","/loans","/user").authenticated()
             .requestMatchers("/","/home", "/holidays/**", "/contact", "/saveMsg",
                     "/courses", "/about", "/assets/**", "/login/**","/notices","/contact","error","/register","/invalidSession").permitAll());
 
