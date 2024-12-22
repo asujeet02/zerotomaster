@@ -1,6 +1,7 @@
 package com.cg.springsecurity.zero_to_master.controller;
 
 import com.cg.springsecurity.zero_to_master.model.Contact;
+import com.cg.springsecurity.zero_to_master.model.ContactEntity;
 import com.cg.springsecurity.zero_to_master.repository.ContactRepository;
 import com.cg.springsecurity.zero_to_master.service.ContactService;
 import jakarta.validation.Valid;
@@ -33,11 +34,11 @@ public class ContactController {
     }*/
 
     @PostMapping("/myContact")
-    public Contact saveContactInquiryDetails(@RequestBody Contact contact)
+    public ContactEntity saveContactInquiryDetails(@RequestBody ContactEntity contactEntity)
     {
        /* contact.setContactId(getServiceReqNumber());
         contact.setCreateDt(new Date(System.currentTimeMillis()));*/
-        return contactRepository.save(contact);
+        return contactRepository.save(contactEntity);
     }
 
     public String getServiceReqNumber() {
@@ -74,7 +75,4 @@ public class ContactController {
         log.info("Number of times the Contact form is submitted : "+contactService.getCounter());
         return "redirect:/contact";
     }
-
-
-
 }

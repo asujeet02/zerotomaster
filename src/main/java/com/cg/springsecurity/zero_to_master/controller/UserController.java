@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -25,6 +26,7 @@ public class UserController {
         try{
                 String hashPwd=passwordEncoder.encode(customer.getPwd());
                 customer.setPwd(hashPwd);
+                customer.setCreateDt(new Date(System.currentTimeMillis()));
                 Customer savedCustomer=customerRepository.save(customer);
 
                 if(savedCustomer.getId()>0)
