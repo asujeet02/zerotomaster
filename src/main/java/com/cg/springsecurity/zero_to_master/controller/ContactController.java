@@ -1,8 +1,6 @@
 package com.cg.springsecurity.zero_to_master.controller;
 
 import com.cg.springsecurity.zero_to_master.model.Contact;
-import com.cg.springsecurity.zero_to_master.model.ContactEntity;
-import com.cg.springsecurity.zero_to_master.repository.ContactRepository;
 import com.cg.springsecurity.zero_to_master.service.ContactService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.Random;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -24,7 +18,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RequiredArgsConstructor
 public class ContactController {
 
-    private final ContactRepository contactRepository;
     private final ContactService contactService;
 
     /*@Autowired
@@ -32,20 +25,6 @@ public class ContactController {
         this.contactRepository = contactRepository;
         this.contactService = contactService;
     }*/
-
-    @PostMapping("/myContact")
-    public ContactEntity saveContactInquiryDetails(@RequestBody ContactEntity contactEntity)
-    {
-       /* contact.setContactId(getServiceReqNumber());
-        contact.setCreateDt(new Date(System.currentTimeMillis()));*/
-        return contactRepository.save(contactEntity);
-    }
-
-    public String getServiceReqNumber() {
-        Random rand = new Random();
-        int randomNumber = rand.nextInt(999999999-9999)+9999;
-        return "SR"+randomNumber;
-    }
 
     @RequestMapping("/contact")
     public String displayContactPage(Model model) {
