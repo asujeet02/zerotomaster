@@ -174,3 +174,20 @@ create table contact_messages(
                                  [message] varchar(2000) not null,
                                  create_dt date default null
 )
+
+create table authorities
+(
+    id int identity(1,1) not null,
+    customer_id int not null,
+    name varchar(50) not null,
+    constraint authorities_ibfk_1 foreign key (customer_id) references customer (customer_id)
+)
+
+insert into authorities (customer_id,[name])
+values(1,'VIEWACCOUNT')
+insert into authorities (customer_id,[name])
+values(1,'VIEWCARDS')
+insert into authorities (customer_id,[name])
+values(1,'VIEWLOANS')
+insert into authorities (customer_id,[name])
+values(1,'VIEWBALANCE')
