@@ -4,7 +4,10 @@ import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAccessDenied
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationFailureHandler;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationSuccessHandler;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.cg.springsecurity.zero_to_master.filter.AuthoritiesLoggingAfterFilter;
+import com.cg.springsecurity.zero_to_master.filter.AuthoritiesLoggingAtFilter;
 import com.cg.springsecurity.zero_to_master.filter.CsrfCookieFilter;
+import com.cg.springsecurity.zero_to_master.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -59,12 +62,19 @@ public class ProjectSecurityConfig {
         //.ignoringRequestMatchers("/myContact","/register")
         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+        .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+        .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+        .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
         .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())
         .authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+        /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
         .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE","VIEWACCOUNT")
         .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")*/
+        .requestMatchers("/myAccount").hasRole("USER")
+        .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
+        .requestMatchers("/myLoans").hasRole("USER")
+        .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/dashboard","/user").authenticated()
         .requestMatchers("/","/home", "/holidays/**", "/myContact", "/saveMsg",
                 "/courses", "/about", "/assets/**", "/login/**","/notices","/contact","error","/register","/invalidSession").permitAll());
