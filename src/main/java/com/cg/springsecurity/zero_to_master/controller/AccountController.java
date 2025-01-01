@@ -15,13 +15,12 @@ public class AccountController {
     @GetMapping("/myAccount")
     public Accounts getAccountDetails(@RequestParam long id) {
         Accounts accounts = accountsRepository.findByCustomerId(id);
-
-        if (accounts != null)
+        if(accounts!= null)
         {
             return accounts;
         }
         else
             return null;
-    }
+        }
 
 }
