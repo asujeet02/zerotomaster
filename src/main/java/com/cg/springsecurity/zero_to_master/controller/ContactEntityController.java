@@ -4,11 +4,14 @@ import com.cg.springsecurity.zero_to_master.model.ContactEntity;
 import com.cg.springsecurity.zero_to_master.repository.ContactRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
@@ -19,11 +22,20 @@ public class ContactEntityController {
     private final ContactRepository contactRepository;
 
     @PostMapping("/myContact")
-    public ContactEntity saveContactInquiryDetails(@RequestBody ContactEntity contactEntity)
+    //@PreFilter("filterObject.contactName!='Test'")
+    @PostFilter("filterObject.contactName!= 'Test'")
+    public List<ContactEntity> saveContactInquiryDetails(@RequestBody List<ContactEntity> contactEntities)
     {
-        contactEntity.setContactId(getServiceReqNumber());
-        contactEntity.setCreateDt(new Date(System.currentTimeMillis()));
-        return contactRepository.save(contactEntity);
+        List<ContactEntity> returnContacts=new ArrayList<>();
+        if(!contactEntities.isEmpty())
+        {
+            ContactEntity contactEntity=contactEntities.getFirst();
+            contactEntity.setContactId(getServiceReqNumber());
+            contactEntity.setCreateDt(new Date(System.currentTimeMillis()));
+            ContactEntity saveContactEntity=contactRepository.save(contactEntity);
+            returnContacts.add(saveContactEntity);
+        }
+        return  returnContacts;
     }
 
     public String getServiceReqNumber() {
