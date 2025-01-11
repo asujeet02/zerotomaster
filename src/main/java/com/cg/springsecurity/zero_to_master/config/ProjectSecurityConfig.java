@@ -78,7 +78,7 @@ public class ProjectSecurityConfig {
         .requestMatchers("/myCards").hasAuthority("VIEWCARDS")*/
         .requestMatchers("/myAccount").hasRole("USER")
         .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
-        .requestMatchers("/myLoans").hasRole("USER")
+        .requestMatchers("/myLoans").authenticated()
         .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/dashboard","/user").authenticated()
         .requestMatchers("/","/home", "/holidays/**", "/myContact", "/saveMsg",
