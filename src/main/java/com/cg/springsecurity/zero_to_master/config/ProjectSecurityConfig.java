@@ -3,23 +3,17 @@ package com.cg.springsecurity.zero_to_master.config;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAccessDeniedHandler;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationFailureHandler;
 import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticationSuccessHandler;
-import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.cg.springsecurity.zero_to_master.filter.*;
+import com.cg.springsecurity.zero_to_master.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -34,6 +28,15 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ProjectSecurityConfig {
 
+    @Value(("${spring.security.oauth2.resourceserver.opaque.introspection-uri}"))
+    String introspectionUri;
+
+    @Value(("${spring.security.oauth2.resourceserver.introspection-client-id}"))
+    String clientId;
+
+    @Value(("${spring.security.oauth2.resourceserver.introspection-client-secret}"))
+    String clientSecret;
+
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
@@ -41,6 +44,8 @@ public class ProjectSecurityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception
     {
         //http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+        JwtAuthenticationConverter jwtAuthenticationConverter=new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeyCloakRoleConverter());
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         http
         //securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
@@ -62,14 +67,14 @@ public class ProjectSecurityConfig {
         .sessionManagement(smc->smc.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true))
 */
         .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-        .ignoringRequestMatchers("/myContact","/register","/apiLogin")
+        .ignoringRequestMatchers("/myContact","/register")
         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-        .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
-        .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
-        .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
-        .addFilterAfter(new JWTTokenGeneratorFilter(),BasicAuthenticationFilter.class)
-        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
+//        .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)  ,"/apiLogin"
+//        .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+//        .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+//        .addFilterAfter(new JWTTokenGeneratorFilter(),BasicAuthenticationFilter.class)
+//        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
         .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())
         .authorizeHttpRequests((requests) -> requests
         /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
@@ -82,15 +87,17 @@ public class ProjectSecurityConfig {
         .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/dashboard","/user").authenticated()
         .requestMatchers("/","/home", "/holidays/**", "/myContact", "/saveMsg",
-                "/courses", "/about", "/assets/**", "/login/**","/notices","/contact","error","/register","/invalidSession","/apiLogin").permitAll());
+                "/courses", "/about", "/assets/**", "/login/**","/notices","/contact","error","/register").permitAll());
 
-        http.formLogin(flc -> flc.loginPage("/login").usernameParameter("userid").passwordParameter("secretPwd")
-        .defaultSuccessUrl("/dashboard").failureUrl("/login?error=true")
-        .successHandler(authenticationSuccessHandler).failureHandler(authenticationFailureHandler))
-        .logout(loc -> loc.logoutSuccessUrl("/login?logout=true").invalidateHttpSession(true).clearAuthentication(true)
-                    .deleteCookies("JSESSIONID"));
-
-        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+//        http.formLogin(flc -> flc.loginPage("/login").usernameParameter("userid").passwordParameter("secretPwd")
+//        .defaultSuccessUrl("/dashboard").failureUrl("/login?error=true")     "/invalidSession","/apiLogin"
+//        .successHandler(authenticationSuccessHandler).failureHandler(authenticationFailureHandler))
+//        .logout(loc -> loc.logoutSuccessUrl("/login?logout=true").invalidateHttpSession(true).clearAuthentication(true)
+//                    .deleteCookies("JSESSIONID"));
+//
+//        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        //http.oauth2ResourceServer(rsc->rsc.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        http.oauth2ResourceServer(rsc->rsc.opaqueToken(otc->otc.authenticationConverter(new KeyCloakOpaqueRoleConverter()).introspectionUri(this.introspectionUri).introspectionClientCredentials(this.clientId,this.clientSecret)));
         http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 /*
         http.exceptionHandling(ehc->ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
@@ -104,24 +111,24 @@ public class ProjectSecurityConfig {
        return new JdbcUserDetailsManager(dataSource);
     }*/
 
-    @Bean
-    public PasswordEncoder passwordEncoder()
-    {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+//    @Bean
+//    public PasswordEncoder passwordEncoder()
+//    {
+//        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+//    }
+//
+//    @Bean
+//    public CompromisedPasswordChecker compromisedPasswordChecker()
+//    {
+//        return new HaveIBeenPwnedRestApiPasswordChecker();
+//    }
 
-    @Bean
-    public CompromisedPasswordChecker compromisedPasswordChecker()
-    {
-        return new HaveIBeenPwnedRestApiPasswordChecker();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,PasswordEncoder passwordEncoder)
-    {
-        EazyBankUsernamePwdAuthenticationProvider authenticationProvider=new EazyBankUsernamePwdAuthenticationProvider(userDetailsService,passwordEncoder);
-        ProviderManager providerManager=new ProviderManager(authenticationProvider);
-        providerManager.setEraseCredentialsAfterAuthentication(false);
-        return providerManager;
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,PasswordEncoder passwordEncoder)
+//    {
+//        EazyBankUsernamePwdAuthenticationProvider authenticationProvider=new EazyBankUsernamePwdAuthenticationProvider(userDetailsService,passwordEncoder);
+//        ProviderManager providerManager=new ProviderManager(authenticationProvider);
+//        providerManager.setEraseCredentialsAfterAuthentication(false);
+//        return providerManager;
+//    }
 }
