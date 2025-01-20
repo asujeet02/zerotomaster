@@ -6,7 +6,6 @@ import com.cg.springsecurity.zero_to_master.exceptionhandling.CustomAuthenticati
 import com.cg.springsecurity.zero_to_master.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -28,14 +27,14 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ProjectSecurityConfig {
 
-    @Value(("${spring.security.oauth2.resourceserver.opaque.introspection-uri}"))
+    /*@Value(("${spring.security.oauth2.resourceserver.opaque.introspection-uri}"))
     String introspectionUri;
 
     @Value(("${spring.security.oauth2.resourceserver.introspection-client-id}"))
     String clientId;
 
     @Value(("${spring.security.oauth2.resourceserver.introspection-client-secret}"))
-    String clientSecret;
+    String clientSecret;*/
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
@@ -96,8 +95,8 @@ public class ProjectSecurityConfig {
 //                    .deleteCookies("JSESSIONID"));
 //
 //        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
-        //http.oauth2ResourceServer(rsc->rsc.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
-        http.oauth2ResourceServer(rsc->rsc.opaqueToken(otc->otc.authenticationConverter(new KeyCloakOpaqueRoleConverter()).introspectionUri(this.introspectionUri).introspectionClientCredentials(this.clientId,this.clientSecret)));
+        http.oauth2ResourceServer(rsc->rsc.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        //http.oauth2ResourceServer(rsc->rsc.opaqueToken(otc->otc.authenticationConverter(new KeyCloakOpaqueRoleConverter()).introspectionUri(this.introspectionUri).introspectionClientCredentials(this.clientId,this.clientSecret)));
         http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 /*
         http.exceptionHandling(ehc->ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
